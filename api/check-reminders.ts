@@ -104,6 +104,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.status(200).json({ ok: true, journeysChecked: journeysSnap.size, notificationsSent: sent });
   } catch (err) {
+    console.error("check-reminders failed:", err);
     res.status(500).json({ error: String(err) });
   }
 }
