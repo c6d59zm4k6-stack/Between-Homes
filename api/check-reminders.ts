@@ -5,11 +5,17 @@
 // URL every 30-60 minutes, with the CRON_SECRET below as a header.
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import admin from "firebase-admin";
+// Modular firebase-admin imports (rather than `import admin from
+// "firebase-admin"`) — the default-export style doesn't reliably survive
+// Vercel's function bundler and silently comes back as an object with no
+// .apps/.firestore on it, causing a "Cannot read properties of undefined"
+// crash before any Firebase call is even attempted.
+import { cert, getApps, getApp, initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 import webpush from "web-push";
 
 function getAdminApp() {
-  if (admin.apps.length) return admin.app();
+  if (getApps().length) return getApp();
   const key = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (!key) throw new Error("FIREBASE_SERVICE_ACCOUNT_KEY is not configured");
   // Accepts the service account JSON pasted in directly, or base64-encoded
@@ -19,7 +25,7 @@ function getAdminApp() {
     ? trimmed
     : Buffer.from(trimmed, "base64").toString("utf-8");
   const serviceAccount = JSON.parse(raw);
-  return admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+  return initializeApp({ credential: cert(serviceAccount) });
 }
 
 const REMINDER_COOLDOWN_HOURS = 4; // don't nudge the same journey more often than this
@@ -33,8 +39,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    getAdminApp();
-    const db = admin.firestore();
+    const app = getAdminApp();
+    const db = getFirestore(app);
 
     webpush.setVapidDetails(
       process.env.VAPID_SUBJECT || "mailto:hello@example.com",
