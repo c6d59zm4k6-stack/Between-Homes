@@ -6,7 +6,7 @@ forget, then turns them into a written chapter later.
 
 ## Project Summary
 
-**Between Homes** is an AI-powered, offline-first storytelling application
+**Between Homes** is an offline-first storytelling application
 designed to help families preserve the experience of moving from one home to
 another. Rather than functioning as a traditional journal or photo gallery,
 the application acts as a quiet documentary director—guiding parents to
@@ -37,7 +37,7 @@ making it straightforward to support additional experiences such as
 vacations, newborn milestones, and road trips without requiring architectural
 changes.
 
-Throughout development, the user interface underwent iterative reviews using
+The user interface was reviewed using
 Apple's Human Interface Guidelines, Nielsen's 10 Usability Heuristics, WCAG
 2.1 AA accessibility standards, and Google's Progressive Web App quality
 checklist. These reviews informed improvements to navigation, safe-area
