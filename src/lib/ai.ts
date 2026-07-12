@@ -20,7 +20,7 @@ export interface ChapterOutput {
 
 /**
  * Calls the serverless /api/generate-chapter function, which holds the
- * Anthropic API key server-side. The model only ever sees the structured
+ * Groq API key server-side. The model only ever sees the structured
  * memory data below — timeline, photo captions, prompt answers, voice
  * transcripts — and is instructed never to invent events or dialogue.
  */

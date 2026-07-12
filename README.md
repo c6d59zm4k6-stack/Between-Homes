@@ -60,8 +60,10 @@ forget, then turns them into a written chapter later.
   who *didn't* take a photo sees a slightly compressed copy of it, not the
   original full-resolution file.
 - **A single Vercel serverless function** (`api/generate-chapter.ts`) holds
-  the Anthropic API key server-side and is the only thing that talks to the
-  Claude API, so the key is never exposed to the browser.
+  the Groq API key server-side and is the only thing that talks to Groq's
+  API, so the key is never exposed to the browser. Groq's free tier and
+  the open models it hosts (Llama 3.3 70B by default) mean this can run
+  at no cost - see "Deploying (Vercel)" below for where to get a key.
 
 ```
 src/
@@ -106,7 +108,8 @@ Vercel auto-detects the Vite app and the `/api` serverless function.
 1. `vercel` (or connect the repo in the Vercel dashboard).
 2. In the Vercel project's Environment Variables, set:
    - The six `VITE_FIREBASE_*` values from `.env`
-   - `ANTHROPIC_API_KEY` (server-side only - do not prefix with `VITE_`)
+   - `GROQ_API_KEY` (server-side only - do not prefix with `VITE_`; get a
+     free key at console.groq.com -> API Keys)
 3. Deploy. The chapter writer will now work at `/api/generate-chapter`.
 
 Once deployed, install it: open the URL on your phone and use

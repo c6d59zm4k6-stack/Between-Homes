@@ -63,7 +63,7 @@ export function BookPage() {
       void pushChapter(chapter);
     } catch {
       setError(
-        "Couldn't reach the chapter writer. Make sure ANTHROPIC_API_KEY is set on your deployment — see the README."
+        "Couldn't reach the chapter writer. Make sure GROQ_API_KEY is set on your deployment — see the README."
       );
     } finally {
       setGenerating(null);
