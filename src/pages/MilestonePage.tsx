@@ -3,7 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ChevronLeft } from "lucide-react";
 import { db } from "../lib/db";
 import { getMilestoneDefinition } from "../lib/milestones";
-import { markMilestoneCaptured } from "../lib/journeyActions";
+import { markMilestoneCaptured, skipMilestone } from "../lib/journeyActions";
 import { MemoryDirectorCard } from "../components/MemoryCard/MemoryDirectorCard";
 
 export function MilestonePage() {
@@ -22,6 +22,11 @@ export function MilestonePage() {
     navigate(`/journey/${journeyId}`);
   }
 
+  async function handleSkip() {
+    await skipMilestone(instance!.id);
+    navigate(`/journey/${journeyId}`);
+  }
+
   return (
     <div className="min-h-full px-5 pt-8 pb-10 max-w-md mx-auto">
       <button
@@ -36,6 +41,12 @@ export function MilestonePage() {
         definition={definition}
         onDone={handleDone}
       />
+      <button
+        onClick={handleSkip}
+        className="w-full text-center text-sm text-stamp mt-4 py-2"
+      >
+        Skip this moment
+      </button>
     </div>
   );
 }

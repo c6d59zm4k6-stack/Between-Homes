@@ -54,6 +54,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         : 0;
       if (now - lastReminder < REMINDER_COOLDOWN_HOURS * 3600 * 1000) continue;
 
+      // Only remind around the actual travel window (1 day before departure
+      // to 14 days after) — otherwise an abandoned journey with one stuck
+      // "active" milestone would keep nudging its family forever.
+      if (journey.departureDate) {
+        const dep = new Date(journey.departureDate).getTime();
+        if (!Number.isNaN(dep)) {
+          const DAY = 24 * 3600 * 1000;
+          if (now < dep - 1 * DAY || now > dep + 14 * DAY) continue;
+        }
+      }
+
       const milestonesSnap = await journeyDoc.ref.collection("milestones").get();
       const staleActive = milestonesSnap.docs.find((m) => {
         const data = m.data();

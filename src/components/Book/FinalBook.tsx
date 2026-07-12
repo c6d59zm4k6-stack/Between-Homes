@@ -1,4 +1,5 @@
 import type { Journey, Chapter, Photo, PromptAnswer } from "../../types";
+import { JourneyScene } from "../Shared/JourneyScene";
 
 interface Props {
   journey: Journey;
@@ -12,15 +13,18 @@ export function FinalBook({ journey, chapters, photosByChapter, favoriteAnswers,
   return (
     <div ref={innerRef} className="bg-paper">
       {/* cover */}
-      <section className="min-h-[70vh] flex flex-col justify-end px-8 py-14 bg-ink text-paper rounded-ticket">
-        <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-marigold-light">
-          A Between Homes Book
-        </p>
-        <h1 className="font-display text-5xl leading-[1.05] mt-3">{journey.title}</h1>
-        <p className="text-paper/70 mt-4">
-          {journey.familyMembers.map((m) => m.name).filter(Boolean).join(", ")}
-        </p>
-        <p className="font-mono text-xs text-paper/50 mt-1">{journey.departureDate}</p>
+      <section className="min-h-[60vh] flex flex-col justify-between px-8 pt-14 pb-0 bg-sky-tint rounded-ticket overflow-hidden border border-ink/5">
+        <div>
+          <p className="font-mono text-[11px] tracking-[0.3em] uppercase text-sky-deep">
+            A Between Homes Book
+          </p>
+          <h1 className="font-display text-5xl leading-[1.05] mt-4 text-ink">{journey.title}</h1>
+          <p className="text-ink-soft mt-4">
+            {journey.familyMembers.map((m) => m.name).filter(Boolean).join(", ")}
+          </p>
+          <p className="font-mono text-xs text-stamp mt-1">{journey.departureDate}</p>
+        </div>
+        <JourneyScene className="w-full h-auto mt-10" />
       </section>
 
       {/* chapters */}
@@ -56,8 +60,9 @@ export function FinalBook({ journey, chapters, photosByChapter, favoriteAnswers,
 
       {favoriteAnswers.length > 0 && (
         <section className="px-6 py-10">
-          <p className="font-mono text-[10px] tracking-[0.25em] text-stamp uppercase mb-4">
+          <p className="font-hand text-2xl text-ink mb-4 relative inline-block">
             In their own words
+            <span className="absolute -bottom-0.5 left-0 w-3/4 h-[3px] bg-marigold/50 rounded-full" />
           </p>
           <div className="space-y-4">
             {favoriteAnswers.map((a) => (

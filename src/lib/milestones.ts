@@ -21,6 +21,7 @@ export const PROMPT_POOL: string[] = [
 export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   {
     key: "leaving_home",
+    tagline: "One last look around.",
     label: "Leaving Home",
     phase: "before",
     photoSuggestions: [
@@ -34,6 +35,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "drive_to_airport",
+    tagline: "Buckle up, here we go.",
     label: "Drive to Airport",
     phase: "before",
     photoSuggestions: [
@@ -46,6 +48,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "airport_arrival",
+    tagline: "New place, new story.",
     label: "Airport Arrival",
     phase: "airport",
     photoSuggestions: [
@@ -58,6 +61,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "checkin",
+    tagline: "First step inside.",
     label: "Check-in",
     phase: "airport",
     photoSuggestions: [
@@ -70,6 +74,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "security",
+    tagline: "Shoes off, deep breath.",
     label: "Security",
     phase: "airport",
     photoSuggestions: ["Shoes back on", "Kids' tray of small treasures"],
@@ -78,6 +83,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "waiting_at_gate",
+    tagline: "The calm before boarding.",
     label: "Waiting at the Gate",
     phase: "airport",
     photoSuggestions: [
@@ -90,6 +96,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "boarding",
+    tagline: "This is really happening.",
     label: "Boarding",
     phase: "airport",
     photoSuggestions: ["Boarding gate", "Walking down the jet bridge"],
@@ -98,6 +105,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "takeoff",
+    tagline: "Up, up, and away.",
     label: "Takeoff",
     phase: "flight",
     photoSuggestions: ["Shoes under the seat in front", "Runway through the window"],
@@ -106,6 +114,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "meal",
+    tagline: "Dinner at 38,000 feet.",
     label: "Meal",
     phase: "flight",
     photoSuggestions: ["Meal tray", "Kids' reaction to airplane food"],
@@ -114,6 +123,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "mid_flight",
+    tagline: "Somewhere over the map.",
     label: "Mid-flight",
     phase: "flight",
     photoSuggestions: ["Sleeping child", "Screen showing the flight map", "The wing"],
@@ -122,6 +132,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "sunset",
+    tagline: "Golden hour in the cabin.",
     label: "Sunset",
     phase: "flight",
     photoSuggestions: ["Window at sunset", "Cabin lit gold"],
@@ -130,6 +141,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "landing",
+    tagline: "Wheels down, new ground.",
     label: "Landing",
     phase: "flight",
     photoSuggestions: ["First glimpse of the new city", "Wheels down"],
@@ -138,6 +150,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "immigration",
+    tagline: "The official hello.",
     label: "Immigration",
     phase: "arrival",
     photoSuggestions: ["Immigration hall signage", "Stamped passport"],
@@ -146,6 +159,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "baggage",
+    tagline: "Everything we own, on wheels.",
     label: "Baggage",
     phase: "arrival",
     photoSuggestions: ["First trolley on new soil", "Bags coming around the carousel"],
@@ -154,6 +168,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "first_drive",
+    tagline: "New streets, new names.",
     label: "First Drive",
     phase: "arrival",
     photoSuggestions: ["Welcome sign", "New streets out the car window"],
@@ -162,6 +177,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "first_home",
+    tagline: "Home, version two.",
     label: "First Home",
     phase: "arrival",
     photoSuggestions: ["Empty new home", "First family photo inside the door"],
@@ -170,6 +186,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "first_meal",
+    tagline: "First taste of the new normal.",
     label: "First Meal",
     phase: "arrival",
     photoSuggestions: ["First grocery store haul", "First meal in the new place"],
@@ -178,6 +195,7 @@ export const RELOCATION_MILESTONES: MilestoneDefinition[] = [
   },
   {
     key: "first_night",
+    tagline: "Lights out in a new city.",
     label: "First Night",
     phase: "arrival",
     photoSuggestions: ["Beds made up for the first time", "Lights of the new city at night"],

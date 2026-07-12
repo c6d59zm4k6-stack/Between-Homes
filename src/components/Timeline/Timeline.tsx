@@ -26,13 +26,23 @@ export function Timeline({ journeyId, journeyType, instances }: Props) {
   }, [instances, journeyType]);
 
   return (
-    <div className="space-y-8 pb-24">
+    <div className="pb-24">
+      <p className="font-hand text-2xl text-ink mb-4 relative inline-block">
+        The story so far
+        <span className="absolute -bottom-0.5 left-0 w-3/4 h-[3px] bg-marigold/50 rounded-full" />
+      </p>
+
       {PHASE_ORDER.filter((p) => grouped[p]?.length).map((phase) => (
-        <section key={phase}>
-          <h2 className="font-mono text-[11px] tracking-[0.25em] uppercase text-stamp mb-3 px-1">
+        <section key={phase} className="mb-8">
+          <h2 className="font-mono text-[11px] tracking-[0.25em] uppercase text-stamp mb-4 pl-[4.5rem]">
             {PHASE_TITLE[phase]}
           </h2>
-          <div className="space-y-3">
+          {/* dashed rail running behind the scene badges */}
+          <div className="relative space-y-4">
+            <div
+              aria-hidden
+              className="absolute left-7 top-4 bottom-4 border-l-2 border-dashed border-ink/10"
+            />
             {grouped[phase].map((inst) => {
               const def = getMilestoneDefinition(journeyType, inst.key);
               if (!def) return null;

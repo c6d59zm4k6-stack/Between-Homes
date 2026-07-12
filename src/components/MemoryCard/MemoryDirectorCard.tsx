@@ -18,13 +18,16 @@ export function MemoryDirectorCard({ journeyId, instance, definition, onDone }: 
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="rounded-ticket bg-paper shadow-card border border-ink/10 overflow-hidden"
+      className="rounded-ticket bg-card shadow-card border border-ink/5 overflow-hidden"
     >
-      <div className="px-5 pt-5 pb-4 border-b border-ink/10">
+      <div className="px-5 pt-5 pb-4 border-b border-ink/5">
         <p className="font-mono text-[10px] tracking-[0.2em] text-stamp uppercase">
           Memory Director · ~{definition.estimatedSeconds} seconds
         </p>
         <h1 className="font-display text-2xl text-ink mt-1">{definition.label}</h1>
+        {definition.tagline && (
+          <p className="font-hand text-xl text-ink-soft mt-0.5">{definition.tagline}</p>
+        )}
       </div>
 
       <div className="px-5 py-5 space-y-6">

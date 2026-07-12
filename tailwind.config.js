@@ -4,38 +4,41 @@ export default {
   theme: {
     extend: {
       colors: {
-        paper: "#FBF7EF",
-        "paper-dim": "#F3EEE2",
-        ink: "#1B2333",
-        "ink-soft": "#3A4256",
+        paper: "#FAF6EE",
+        "paper-dim": "#F3EDE0",
+        card: "#FFFDF8",
+        ink: "#243044",
+        "ink-soft": "#5A6478",
         marigold: {
           DEFAULT: "#E8A33D",
-          dark: "#C97F1F",
-          light: "#F3C877",
+          dark: "#C07F1D",
+          light: "#F5D9A8",
         },
         teal: {
           DEFAULT: "#2D5F5A",
           dark: "#1F433F",
           light: "#4C8983",
         },
-        clay: "#B5654A",
-        stamp: "#8A7A63",
+        stamp: "#94886F",
+        // per-phase scene identities — tint for fills, deep for icons/text
+        peach: { tint: "#F8E3D4", deep: "#C97853" },
+        sky: { tint: "#DCEAF4", deep: "#5E93B8" },
+        lavender: { tint: "#E8E3F2", deep: "#8078AC" },
+        sage: { tint: "#E3E9D6", deep: "#75904F" },
+        coral: "#E08D6D",
       },
       fontFamily: {
         display: ["Fraunces", "serif"],
         body: ["Inter", "sans-serif"],
         mono: ["IBM Plex Mono", "monospace"],
+        hand: ["Caveat", "cursive"],
       },
       borderRadius: {
-        ticket: "1.25rem",
+        ticket: "1.5rem",
       },
       boxShadow: {
-        card: "0 8px 30px -12px rgba(27, 35, 51, 0.25)",
-        stamp: "inset 0 0 0 1.5px rgba(138,122,99,0.5)",
-      },
-      backgroundImage: {
-        perforation:
-          "radial-gradient(circle, rgba(27,35,51,0.15) 1.5px, transparent 1.5px)",
+        card: "0 6px 24px -14px rgba(36, 48, 68, 0.22)",
+        soft: "0 2px 12px -6px rgba(36, 48, 68, 0.12)",
       },
     },
   },

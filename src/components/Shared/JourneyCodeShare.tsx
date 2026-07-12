@@ -12,13 +12,16 @@ export function JourneyCodeShare({ code, title }: { code: string; title: string 
   }
 
   async function share() {
+    const joinUrl = `${window.location.origin}/#/join/${code}`;
     if (navigator.share) {
       await navigator.share({
         title: "Join our Between Homes journey",
-        text: `Join "${title}" on Between Homes with code ${code}`,
+        text: `Join "${title}" on Between Homes — tap to join: ${joinUrl} (or use code ${code})`,
       });
     } else {
-      copy();
+      await navigator.clipboard.writeText(joinUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     }
   }
 

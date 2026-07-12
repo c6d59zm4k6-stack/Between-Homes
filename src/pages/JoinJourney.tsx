@@ -9,10 +9,14 @@ export function JoinJourney() {
 
   useEffect(() => {
     if (!code) return;
-    joinJourneyByCode(code).then((journey) => {
-      if (journey) navigate(`/journey/${journey.id}`, { replace: true });
-      else setError("That journey code wasn't found.");
-    });
+    joinJourneyByCode(code)
+      .then((journey) => {
+        if (journey) navigate(`/journey/${journey.id}`, { replace: true });
+        else setError("That journey code wasn't found.");
+      })
+      .catch(() => {
+        setError("Couldn't reach the server — check your connection and try again.");
+      });
   }, [code]);
 
   return (

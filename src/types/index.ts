@@ -44,6 +44,7 @@ export type MilestoneStatus = "locked" | "active" | "captured" | "skipped";
 export interface MilestoneDefinition {
   key: string; // stable key, e.g. "leaving_home"
   label: string;
+  tagline?: string; // one warm line under the title, e.g. "One last look around."
   phase: "before" | "airport" | "flight" | "arrival";
   photoSuggestions: string[];
   prompts: string[]; // pool of possible quick-prompts; one is chosen per instance

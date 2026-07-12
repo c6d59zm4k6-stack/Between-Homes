@@ -18,7 +18,10 @@ export function LocationNudge({
   const [target, setTarget] = useState<MilestoneInstance | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
+  const underway = instances.some((i) => i.status === "captured");
+
   useEffect(() => {
+    if (!underway) return; // don't ask for location before the trip has begun
     if (!journey.destinationCoords || !("geolocation" in navigator)) return;
     // One-shot read on page open — not continuous background tracking,
     // which mobile browsers don't allow for installed PWAs anyway.
@@ -40,7 +43,7 @@ export function LocationNudge({
       () => {}, // permission denied or unavailable — just skip the nudge silently
       { maximumAge: 10 * 60 * 1000, timeout: 8000 }
     );
-  }, [journey.id]);
+  }, [journey.id, underway]);
 
   if (!target || dismissed) return null;
 

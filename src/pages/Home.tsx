@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { db } from "../lib/db";
 import { joinJourneyByCode } from "../lib/journeyActions";
 import { Button } from "../components/ui/Button";
+import { JourneyScene } from "../components/Shared/JourneyScene";
 
 export function Home() {
   const navigate = useNavigate();
@@ -18,13 +19,18 @@ export function Home() {
     e.preventDefault();
     setJoining(true);
     setError("");
-    const journey = await joinJourneyByCode(code);
-    setJoining(false);
-    if (!journey) {
-      setError("No journey found with that code. Double-check with your partner.");
-      return;
+    try {
+      const journey = await joinJourneyByCode(code);
+      if (!journey) {
+        setError("No journey found with that code. Double-check with your partner.");
+        return;
+      }
+      navigate(`/journey/${journey.id}`);
+    } catch {
+      setError("Couldn't reach the server — check your connection and try again.");
+    } finally {
+      setJoining(false);
     }
-    navigate(`/journey/${journey.id}`);
   }
 
   return (
@@ -34,14 +40,13 @@ export function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="font-mono text-[11px] tracking-[0.25em] text-stamp uppercase mb-3">
-          Between Homes
-        </p>
+        <p className="font-hand text-2xl text-marigold-dark mb-1">Between Homes</p>
         <h1 className="font-display text-4xl leading-tight text-ink">
           The story behind
           <br />
           the photos.
         </h1>
+        <JourneyScene className="w-full h-auto mt-5" />
         <p className="text-ink-soft mt-4 leading-relaxed">
           Not a journal. Not a gallery. A quiet director in your pocket —
           nudging you toward the shots and small details you'd otherwise
@@ -89,7 +94,7 @@ export function Home() {
               <button
                 key={j.id}
                 onClick={() => navigate(`/journey/${j.id}`)}
-                className="w-full text-left rounded-xl border border-ink/10 bg-paper-dim px-4 py-3"
+                className="w-full text-left rounded-ticket border border-ink/5 bg-card shadow-soft px-4 py-3"
               >
                 <p className="font-display text-lg text-ink">{j.title}</p>
                 <p className="text-xs text-ink-soft">{j.departureDate}</p>

@@ -47,7 +47,10 @@ export const authReady: Promise<User | null> = new Promise((res) => {
   authReadyResolve = res;
 });
 
+let authInitStarted = false;
 export function initAuth() {
+  if (authInitStarted) return;
+  authInitStarted = true;
   if (!auth) {
     authReadyResolve(null);
     return;
