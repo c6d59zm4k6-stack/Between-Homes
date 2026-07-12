@@ -4,6 +4,51 @@ A quiet documentary director for your family's big move. Not a journal, not a
 gallery — it nudges you toward the shots and small details you'd otherwise
 forget, then turns them into a written chapter later.
 
+## Project Summary
+
+**Between Homes** is an AI-powered, offline-first storytelling application
+designed to help families preserve the experience of moving from one home to
+another. Rather than functioning as a traditional journal or photo gallery,
+the application acts as a quiet documentary director—guiding parents to
+capture meaningful moments, everyday details, and brief reflections that
+might otherwise be forgotten. As milestones are completed, AI transforms the
+family's own photos, prompt responses, and voice notes into narrative
+chapters, ultimately producing a professionally formatted digital memory book
+grounded entirely in real events.
+
+The application was developed as a mobile-first Progressive Web App (PWA)
+using React, TypeScript, Vite, Tailwind CSS, and Framer Motion. The
+technology stack is intentionally built on widely adopted, industry-standard
+frameworks to maximize maintainability, reliability, and ease of deployment.
+The primary architectural decision is an **offline-first, local-first**
+design, where **IndexedDB (Dexie)** serves as the primary source of truth and
+cloud services are used only for synchronization. This enables the
+application to remain fully functional without an internet connection while
+automatically synchronizing captured memories across family members whenever
+connectivity is restored.
+
+Multi-device collaboration is provided through Firebase Anonymous
+Authentication and Firestore, allowing two parents to contribute to the same
+journey from separate devices while keeping operational complexity low. AI
+chapter generation is isolated behind a serverless API, ensuring API keys are
+never exposed to the client while allowing AI models to be updated
+independently of the application. The milestone engine itself is modular,
+making it straightforward to support additional experiences such as
+vacations, newborn milestones, and road trips without requiring architectural
+changes.
+
+Throughout development, the user interface underwent iterative reviews using
+Apple's Human Interface Guidelines, Nielsen's 10 Usability Heuristics, WCAG
+2.1 AA accessibility standards, and Google's Progressive Web App quality
+checklist. These reviews informed improvements to navigation, safe-area
+handling, accessibility, offline feedback, synchronization visibility,
+loading and recovery states, responsive layouts, image memory optimization,
+touch-first interactions, and overall visual consistency. The resulting
+application combines established engineering practices with a calm,
+documentary-inspired user experience while remaining deployable at virtually
+no operational cost using free-tier cloud services and serverless
+infrastructure.
+
 ## What's implemented
 
 - **Journey setup** — departure/destination city, date, family members.
