@@ -6,6 +6,12 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // injectManifest instead of the default generateSW: this lets our
+      // own src/sw.ts add push / notificationclick handlers for check-in
+      // reminders, while still precaching the app shell for offline use.
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       registerType: "autoUpdate",
       includeAssets: ["icons/icon-192.png", "icons/icon-512.png"],
       manifest: {
@@ -23,17 +29,10 @@ export default defineConfig({
           { src: "icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,png,svg,woff2}"],
-        // Photos/audio live in IndexedDB (Dexie), not in the SW cache, so the
+      injectManifest: {
+        // Photos/audio live in IndexedDB (Dexie), not the SW cache, so the
         // app shell stays small and installs fast even offline.
-        runtimeCaching: [
-          {
-            urlPattern: /^https?:\/\/[^/]+\/(?!api\/).*$/,
-            handler: "StaleWhileRevalidate",
-            options: { cacheName: "app-shell" },
-          },
-        ],
+        globPatterns: ["**/*.{js,css,html,png,svg,woff2}"],
       },
     }),
   ],

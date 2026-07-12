@@ -115,6 +115,42 @@ Vercel auto-detects the Vite app and the `/api` serverless function.
 Once deployed, install it: open the URL on your phone and use
 "Add to Home Screen" (iOS Safari) or the install prompt (Android Chrome).
 
+## Setting up check-in reminders (optional)
+
+This feature nudges a phone with a real push notification if a milestone
+has sat "active but uncaptured" for a few hours, and lets the app jump
+straight to the arrival milestones if it notices you've landed near your
+destination city. It's entirely optional - skip this section and the rest
+of the app works exactly the same, just without the nudges.
+
+1. **Generate VAPID keys** (a one-time key pair for Web Push):
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+   Add the public key as `VITE_VAPID_PUBLIC_KEY` and the private key as
+   `VAPID_PRIVATE_KEY` in Vercel's Environment Variables. Also set
+   `VAPID_SUBJECT` to `mailto:youremail@example.com` (required by the Web
+   Push spec, never shown to users).
+2. **Get a Firebase service account key**: Firebase console -> gear icon ->
+   Project settings -> Service accounts tab -> "Generate new private key."
+   This downloads a JSON file. Open it, copy the entire contents, and paste
+   them as the value of `FIREBASE_SERVICE_ACCOUNT_KEY` in Vercel (raw JSON
+   is fine - no need to encode it).
+3. **Make up a `CRON_SECRET`**: any random string (e.g. generate one at
+   randomkeygen.com), and set it as an env var in Vercel. This is what
+   authorizes your external scheduler to trigger the reminder check.
+4. **Redeploy** so the new environment variables take effect.
+5. **Set up a free external scheduler** - Vercel's own free-tier cron only
+   runs once a day, too infrequent to be useful mid-trip. Instead:
+   - Sign up free at cron-job.org
+   - Create a new cron job pointing at
+     `https://your-app.vercel.app/api/check-reminders`
+   - Set it to run every 30-60 minutes
+   - Add a custom header: `x-cron-secret` = the value you set above
+6. Open the app, and on the journey dashboard tap "Get a gentle check-in
+   reminder" to opt that phone in (each parent does this on their own
+   phone/browser prompt).
+
 ## Known trade-off worth knowing about
 
 The Firestore/Storage rules use each journey's join code as the invite

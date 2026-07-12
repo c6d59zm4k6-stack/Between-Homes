@@ -46,6 +46,9 @@ service cloud.firestore {
       match /chapters/{docId} {
         allow read, write: if isMember();
       }
+      match /subscriptions/{docId} {
+        allow read, write: if isMember();
+      }
     }
   }
 }

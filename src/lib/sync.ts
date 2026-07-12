@@ -33,6 +33,7 @@ function journeyCollections(journeyId: string) {
     promptAnswers: collection(base, "promptAnswers"),
     voiceNotes: collection(base, "voiceNotes"),
     chapters: collection(base, "chapters"),
+    subscriptions: collection(base, "subscriptions"),
   };
 }
 
@@ -89,6 +90,26 @@ export async function pushChapter(c: Chapter) {
   if (!isFirebaseConfigured || !isOnline()) return;
   const { chapters } = journeyCollections(c.journeyId);
   await setDoc(doc(chapters, c.id), c, { merge: true });
+}
+
+export async function saveSubscription(
+  journeyId: string,
+  uid: string,
+  subscription: { endpoint: string; keys: { p256dh: string; auth: string } }
+) {
+  if (!isFirebaseConfigured || !dbFs) return;
+  const { subscriptions } = journeyCollections(journeyId);
+  await setDoc(
+    doc(subscriptions, uid),
+    {
+      id: uid,
+      journeyId,
+      endpoint: subscription.endpoint,
+      keys: subscription.keys,
+      createdAt: new Date().toISOString(),
+    },
+    { merge: true }
+  );
 }
 
 // ---- join a shared journey by code ---------------------------------------

@@ -4,6 +4,8 @@ import { BookOpen } from "lucide-react";
 import { db } from "../lib/db";
 import { Timeline } from "../components/Timeline/Timeline";
 import { JourneyCodeShare } from "../components/Shared/JourneyCodeShare";
+import { ReminderToggle } from "../components/Shared/ReminderToggle";
+import { LocationNudge } from "../components/Shared/LocationNudge";
 
 export function JourneyDashboard() {
   const { journeyId } = useParams<{ journeyId: string }>();
@@ -41,9 +43,15 @@ export function JourneyDashboard() {
         </button>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <JourneyCodeShare code={journey.joinCode} title={journey.title} />
       </div>
+
+      <div className="mb-6">
+        <ReminderToggle journeyId={journey.id} />
+      </div>
+
+      {instances && <LocationNudge journey={journey} instances={instances} />}
 
       {instances && (
         <Timeline journeyId={journey.id} journeyType={journey.type} instances={instances} />

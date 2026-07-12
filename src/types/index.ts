@@ -21,6 +21,11 @@ export interface Journey {
   title: string; // e.g. "Bangalore to Seattle"
   departureCity?: string;
   destinationCity?: string;
+  // Geocoded once at creation (see lib/geocode.ts) so the app can compare
+  // a phone's current location against these without any paid API.
+  departureCoords?: { lat: number; lng: number };
+  destinationCoords?: { lat: number; lng: number };
+  lastReminderAt?: string; // set by the reminder-check endpoint, cooldown guard
   departureDate: string; // ISO date
   familyMembers: FamilyMember[];
   flightDetails?: {
@@ -108,5 +113,13 @@ export interface SyncQueueItem {
   docId: string;
   op: "put" | "delete";
   attempts: number;
+  createdAt: string;
+}
+
+export interface PushSubscriptionRecord {
+  id: string; // = uid, one subscription per device
+  journeyId: string;
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
   createdAt: string;
 }

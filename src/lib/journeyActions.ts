@@ -3,6 +3,7 @@ import { db } from "./db";
 import { getCurrentUid } from "./firebase";
 import { pushJourney, pushMilestone, findJourneyByCode, joinJourney, subscribeToJourney } from "./sync";
 import { MILESTONE_SETS, nextPrompt } from "./milestones";
+import { geocodeCity } from "./geocode";
 import type { Journey, MilestoneInstance, JourneyType, FamilyMember } from "../types";
 
 function generateJoinCode(): string {
@@ -24,6 +25,13 @@ export interface CreateJourneyInput {
 
 export async function createJourney(input: CreateJourneyInput): Promise<Journey> {
   const uid = getCurrentUid();
+  // Best-effort geocoding — powers the "you're near the airport, want to
+  // jump there?" nudge later. If it fails (offline, city name too vague),
+  // the journey still gets created normally, just without that nudge.
+  const [departureCoords, destinationCoords] = await Promise.all([
+    input.departureCity ? geocodeCity(input.departureCity) : Promise.resolve(null),
+    input.destinationCity ? geocodeCity(input.destinationCity) : Promise.resolve(null),
+  ]);
   const journey: Journey = {
     id: nanoid(),
     joinCode: generateJoinCode(),
@@ -31,6 +39,8 @@ export async function createJourney(input: CreateJourneyInput): Promise<Journey>
     createdBy: uid,
     members: [uid],
     ...input,
+    ...(departureCoords ? { departureCoords } : {}),
+    ...(destinationCoords ? { destinationCoords } : {}),
   };
   await db.journeys.add(journey);
 
