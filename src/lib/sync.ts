@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   setDoc,
+  deleteDoc,
   query,
   where,
   getDocs,
@@ -90,6 +91,12 @@ export async function pushChapter(c: Chapter) {
   if (!isFirebaseConfigured || !isOnline()) return;
   const { chapters } = journeyCollections(c.journeyId);
   await setDoc(doc(chapters, c.id), c, { merge: true });
+}
+
+export async function deleteSubscription(journeyId: string, uid: string) {
+  if (!isFirebaseConfigured || !dbFs) return;
+  const { subscriptions } = journeyCollections(journeyId);
+  await deleteDoc(doc(subscriptions, uid));
 }
 
 export async function saveSubscription(
