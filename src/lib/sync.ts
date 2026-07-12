@@ -9,8 +9,8 @@ import {
   arrayUnion,
   type Unsubscribe,
 } from "firebase/firestore";
-import { ref, uploadString, getDownloadURL } from "firebase/storage";
-import { dbFs, storage, isFirebaseConfigured, getCurrentUid } from "./firebase";
+import { dbFs, isFirebaseConfigured, getCurrentUid } from "./firebase";
+import { compressDataUrl } from "./imageCompress";
 import { db } from "./db";
 import type {
   Journey,
@@ -63,37 +63,26 @@ export async function pushPromptAnswer(p: PromptAnswer) {
 }
 
 export async function pushPhoto(p: Photo) {
-  if (!isFirebaseConfigured || !isOnline() || !storage) return;
-  let storageUrl = p.storageUrl;
-  if (!storageUrl && p.dataUrl?.startsWith("data:")) {
-    const path = `journeys/${p.journeyId}/photos/${p.id}.jpg`;
-    const fileRef = ref(storage, path);
-    await uploadString(fileRef, p.dataUrl, "data_url");
-    storageUrl = await getDownloadURL(fileRef);
-  }
-  if (!storageUrl) return; // nothing uploadable yet
-  // Firestore docs have a 1 MiB limit — the base64 image must never be
-  // written into the document. The doc carries only the Storage URL.
-  const { dataUrl: _localOnly, ...docData } = p;
+  if (!isFirebaseConfigured || !isOnline() || !p.dataUrl) return;
+  // No Firebase Storage (that requires a paid Blaze plan) — instead we
+  // shrink the photo enough to fit directly inside the Firestore document.
+  // The originating device keeps the full-resolution copy locally.
+  const compressed = await compressDataUrl(p.dataUrl);
   const { photos } = journeyCollections(p.journeyId);
-  await setDoc(doc(photos, p.id), { ...docData, storageUrl }, { merge: true });
-  await db.photos.update(p.id, { storageUrl });
+  await setDoc(doc(photos, p.id), { ...p, dataUrl: compressed }, { merge: true });
 }
 
 export async function pushVoiceNote(v: VoiceNote) {
-  if (!isFirebaseConfigured || !isOnline() || !storage) return;
-  let storageUrl = v.storageUrl;
-  if (!storageUrl && v.audioDataUrl?.startsWith("data:")) {
-    const path = `journeys/${v.journeyId}/voice/${v.id}.webm`;
-    const fileRef = ref(storage, path);
-    await uploadString(fileRef, v.audioDataUrl, "data_url");
-    storageUrl = await getDownloadURL(fileRef);
+  if (!isFirebaseConfigured || !isOnline() || !v.audioDataUrl) return;
+  // Recorded at a low bitrate (see VoiceRecorder.tsx) specifically so a
+  // full 20-second note fits inside Firestore's 1 MiB document limit —
+  // no Storage upload needed.
+  if (v.audioDataUrl.length > 950_000) {
+    console.warn("Voice note too large to sync; it will stay local-only on this device.");
+    return;
   }
-  if (!storageUrl) return;
-  const { audioDataUrl: _localOnly, ...docData } = v;
   const { voiceNotes } = journeyCollections(v.journeyId);
-  await setDoc(doc(voiceNotes, v.id), { ...docData, storageUrl }, { merge: true });
-  await db.voiceNotes.update(v.id, { storageUrl });
+  await setDoc(doc(voiceNotes, v.id), v, { merge: true });
 }
 
 export async function pushChapter(c: Chapter) {
@@ -149,7 +138,7 @@ export function subscribeToJourney(journeyId: string): Unsubscribe[] {
         if (c.type === "removed") return;
         const remote = c.doc.data() as Photo;
         // Preserve this device's local full-res base64 if it has one —
-        // the remote doc intentionally carries only the storageUrl.
+        // the remote doc carries a smaller, compressed copy instead.
         void db.photos.get(remote.id).then((local) =>
           db.photos.put({ ...remote, dataUrl: local?.dataUrl ?? remote.dataUrl })
         );
@@ -202,9 +191,9 @@ export async function flushPendingSync(journeyId: string) {
   if (journey) await pushJourney(journey);
   await Promise.all([
     ...milestones.map(pushMilestone),
-    ...photos.filter((p) => !p.storageUrl).map(pushPhoto),
+    ...photos.map(pushPhoto),
     ...promptAnswers.map(pushPromptAnswer),
-    ...voiceNotes.filter((v) => !v.storageUrl).map(pushVoiceNote),
+    ...voiceNotes.map(pushVoiceNote),
     ...chapters.map(pushChapter),
   ]);
 }

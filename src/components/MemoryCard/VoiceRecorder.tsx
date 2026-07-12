@@ -39,7 +39,11 @@ export function VoiceRecorder({ journeyId, milestoneInstanceId }: Props) {
   async function startRecording() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      // Deliberately low bitrate: with no Firebase Storage in the picture,
+      // the recording has to fit directly inside a Firestore document.
+      // ~24 kbps keeps a full 20s note comfortably under the 1 MiB limit
+      // (speech stays intelligible at this rate — it's not music).
+      const recorder = new MediaRecorder(stream, { audioBitsPerSecond: 24_000 });
       chunksRef.current = [];
       recorder.ondataavailable = (e) => chunksRef.current.push(e.data);
       recorder.onstop = async () => {
@@ -100,7 +104,7 @@ export function VoiceRecorder({ journeyId, milestoneInstanceId }: Props) {
       <div className="flex items-center gap-3 rounded-xl border border-ink/15 bg-paper px-3.5 py-3">
         <audio
           ref={audioRef}
-          src={existing.audioDataUrl ?? existing.storageUrl}
+          src={existing.audioDataUrl}
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
           onEnded={() => setPlaying(false)}

@@ -36,7 +36,7 @@ export function FinalBook({ journey, chapters, photosByChapter, favoriteAnswers,
               {photosByChapter[chapter.id].slice(0, 6).map((p) => (
                 <img
                   key={p.id}
-                  src={p.dataUrl ?? p.storageUrl}
+                  src={p.dataUrl}
                   alt={p.caption ?? ""}
                   className="aspect-square object-cover rounded-lg"
                 />

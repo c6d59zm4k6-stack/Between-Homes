@@ -60,10 +60,10 @@ export interface Photo {
   id: string;
   journeyId: string;
   milestoneInstanceId: string;
-  // Full-resolution base64 lives ONLY in IndexedDB on the authoring device.
-  // Firestore documents carry storageUrl instead (1 MiB doc limit).
+  // Full-resolution base64 on the authoring device; a compressed copy
+  // syncs to Firestore directly (no Firebase Storage / no paid plan
+  // needed) so other devices see a smaller version of the same field.
   dataUrl?: string;
-  storageUrl?: string;
   caption?: string;
   timestamp: string;
   createdBy: string;
@@ -83,9 +83,8 @@ export interface VoiceNote {
   id: string;
   journeyId: string;
   milestoneInstanceId: string;
-  // base64 audio stays local; Firestore carries storageUrl only.
+  // Recorded at a low bitrate so it fits directly in a Firestore doc.
   audioDataUrl?: string;
-  storageUrl?: string;
   durationSeconds: number;
   transcript?: string;
   timestamp: string;

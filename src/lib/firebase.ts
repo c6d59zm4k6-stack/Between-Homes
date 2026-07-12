@@ -11,8 +11,6 @@ import {
   enableIndexedDbPersistence,
   type Firestore,
 } from "firebase/firestore";
-import { getStorage, type FirebaseStorage } from "firebase/storage";
-
 // All values come from Vite env vars (see .env.example). If they aren't
 // configured, the app still works — it just runs fully local/offline on
 // this one device, with no cross-device sync until you add Firebase keys.
@@ -30,20 +28,18 @@ export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseCon
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let dbFs: Firestore | null = null;
-let storage: FirebaseStorage | null = null;
 
 if (isFirebaseConfigured) {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   dbFs = getFirestore(app);
-  storage = getStorage(app);
   enableIndexedDbPersistence(dbFs).catch(() => {
     // multiple tabs open, or unsupported browser — sync will still work,
     // just without Firestore's own offline cache layered on top of ours.
   });
 }
 
-export { auth, dbFs, storage };
+export { auth, dbFs };
 
 let currentUser: User | null = null;
 let authReadyResolve: (u: User | null) => void;

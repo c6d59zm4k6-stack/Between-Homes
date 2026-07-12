@@ -76,7 +76,7 @@ export function PhotoSuggestions({ journeyId, milestoneInstanceId, suggestions }
               className="relative aspect-[4/3] rounded-xl overflow-hidden border border-ink/10 bg-paper-dim text-left"
             >
               {photo ? (
-                <img src={photo.dataUrl ?? photo.storageUrl} alt={s} className="w-full h-full object-cover" />
+                <img src={photo.dataUrl} alt={s} className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full gap-1.5 px-2">
                   <Camera className="w-5 h-5 text-stamp" />
