@@ -114,3 +114,29 @@ export async function joinJourneyByCode(code: string): Promise<Journey | null> {
   subscribeToJourney(journey.id);
   return journey;
 }
+
+/** Records which family member this device belongs to, shared via the
+ * journey doc so every device can label content by name. */
+export async function setMemberIdentity(journeyId: string, memberName: string) {
+  const uid = getCurrentUid();
+  const journey = await db.journeys.get(journeyId);
+  if (!journey) return;
+  const memberProfiles = { ...(journey.memberProfiles ?? {}), [uid]: memberName };
+  await db.journeys.update(journeyId, { memberProfiles });
+  const updated = await db.journeys.get(journeyId);
+  if (updated) void pushJourney(updated);
+}
+
+/** Removes a journey and all its data from THIS device only. The cloud
+ * copy and everyone else's devices are untouched — rejoining with the
+ * code brings it back. Safe for cleaning up test journeys. */
+export async function removeJourneyFromDevice(journeyId: string) {
+  await Promise.all([
+    db.milestones.where("journeyId").equals(journeyId).delete(),
+    db.photos.where("journeyId").equals(journeyId).delete(),
+    db.promptAnswers.where("journeyId").equals(journeyId).delete(),
+    db.voiceNotes.where("journeyId").equals(journeyId).delete(),
+    db.chapters.where("journeyId").equals(journeyId).delete(),
+  ]);
+  await db.journeys.delete(journeyId);
+}

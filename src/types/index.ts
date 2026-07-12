@@ -37,6 +37,9 @@ export interface Journey {
   createdAt: string;
   createdBy: string; // device/user uid
   members: string[]; // uids of everyone who has joined
+  // Which family member each device belongs to — lets notes/photos be
+  // labeled "Priya" instead of "the other phone" across any number of devices.
+  memberProfiles?: Record<string, string>;
 }
 
 export type MilestoneStatus = "locked" | "active" | "captured" | "skipped";
@@ -70,6 +73,9 @@ export interface Photo {
   // syncs to Firestore directly (no Firebase Storage / no paid plan
   // needed) so other devices see a smaller version of the same field.
   dataUrl?: string;
+  // Small (~320px) thumbnail generated at capture time — grids render this
+  // instead of decoding dozens of full-size images (memory safety on phones).
+  thumbUrl?: string;
   caption?: string;
   timestamp: string;
   createdBy: string;
@@ -91,6 +97,8 @@ export interface VoiceNote {
   milestoneInstanceId: string;
   // Recorded at a low bitrate so it fits directly in a Firestore doc.
   audioDataUrl?: string;
+  // Actual recorded container (audio/mp4 on iPhone, audio/webm elsewhere).
+  mimeType?: string;
   durationSeconds: number;
   transcript?: string;
   timestamp: string;

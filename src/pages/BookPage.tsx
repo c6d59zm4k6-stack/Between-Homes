@@ -10,6 +10,8 @@ import { PHASE_ORDER, PHASE_TITLE, groupByPhase, isPhaseComplete, assembleChapte
 import { exportNodeToPdf } from "../lib/pdfExport";
 import { FinalBook } from "../components/Book/FinalBook";
 import { Button } from "../components/ui/Button";
+import { PageLoading, PageNotFound } from "../components/Shared/PageStates";
+import { useJourney } from "../lib/useJourneyHelpers";
 import type { Photo } from "../types";
 
 export function BookPage() {
@@ -20,7 +22,7 @@ export function BookPage() {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
 
-  const journey = useLiveQuery(() => db.journeys.get(journeyId!), [journeyId]);
+  const journey = useJourney(journeyId);
   const instances = useLiveQuery(
     () => db.milestones.where("journeyId").equals(journeyId!).toArray(),
     [journeyId]
@@ -38,7 +40,8 @@ export function BookPage() {
     [journeyId]
   );
 
-  if (!journey || !instances) return null;
+  if (journey === undefined || instances === undefined) return <PageLoading />;
+  if (journey === null) return <PageNotFound />;
 
   const grouped = groupByPhase(instances, journey.type);
   const writtenPhases = new Set((chapters ?? []).map((c) => c.phase));
@@ -102,7 +105,10 @@ export function BookPage() {
   return (
     <div className="min-h-full max-w-md mx-auto pb-16">
       <div className="flex items-center justify-between px-5 pt-8 pb-4">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-ink-soft text-sm">
+        <button
+          onClick={() => navigate(`/journey/${journeyId}`)}
+          className="flex items-center gap-1 text-ink-soft text-sm py-2 -my-2"
+        >
           <ChevronLeft className="w-4 h-4" /> Timeline
         </button>
         <Button variant="secondary" onClick={handleExport} disabled={exporting || !chapters?.length}>

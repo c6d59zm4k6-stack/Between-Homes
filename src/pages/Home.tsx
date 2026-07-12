@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { motion } from "framer-motion";
+import { Trash2 } from "lucide-react";
 import { db } from "../lib/db";
-import { joinJourneyByCode } from "../lib/journeyActions";
+import { joinJourneyByCode, removeJourneyFromDevice } from "../lib/journeyActions";
 import { Button } from "../components/ui/Button";
 import { JourneyScene } from "../components/Shared/JourneyScene";
 
@@ -91,18 +92,40 @@ export function Home() {
           </p>
           <div className="space-y-2">
             {journeys.map((j) => (
-              <button
+              <div
                 key={j.id}
-                onClick={() => navigate(`/journey/${j.id}`)}
-                className="w-full text-left rounded-ticket border border-ink/5 bg-card shadow-soft px-4 py-3"
+                className="flex items-center rounded-ticket border border-ink/5 bg-card shadow-soft"
               >
-                <p className="font-display text-lg text-ink">{j.title}</p>
-                <p className="text-xs text-ink-soft">{j.departureDate}</p>
-              </button>
+                <button
+                  onClick={() => navigate(`/journey/${j.id}`)}
+                  className="flex-1 min-w-0 text-left px-4 py-3"
+                >
+                  <p className="font-display text-lg text-ink truncate">{j.title}</p>
+                  <p className="text-xs text-ink-soft">{formatDate(j.departureDate)}</p>
+                </button>
+                <button
+                  onClick={async () => {
+                    const sure = window.confirm(
+                      `Remove "${j.title}" from this device? The cloud copy and other devices keep it — rejoin anytime with code ${j.joinCode}.`
+                    );
+                    if (sure) await removeJourneyFromDevice(j.id);
+                  }}
+                  className="p-3 mr-1 text-stamp"
+                  aria-label={`Remove ${j.title} from this device`}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             ))}
           </div>
         </div>
       )}
     </div>
   );
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
 }

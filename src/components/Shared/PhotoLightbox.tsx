@@ -12,8 +12,20 @@ interface Props {
 
 export function PhotoLightbox({ photos, startIndex, onClose, onRetake }: Props) {
   const [index, setIndex] = useState(startIndex);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const photo = photos[index];
   if (!photo) return null;
+
+  function onTouchStart(e: React.TouchEvent) {
+    setTouchStartX(e.touches[0].clientX);
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchStartX === null || photos.length < 2) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (dx < -50) setIndex((i) => (i + 1) % photos.length);
+    else if (dx > 50) setIndex((i) => (i - 1 + photos.length) % photos.length);
+    setTouchStartX(null);
+  }
 
   function download() {
     // Native share sheet first (the reliable route to "Save Image" on an
@@ -25,7 +37,8 @@ export function PhotoLightbox({ photos, startIndex, onClose, onRetake }: Props) 
     <div className="fixed inset-0 z-50 bg-ink/95 flex flex-col" onClick={onClose}>
       {/* top bar */}
       <div
-        className="flex items-center justify-between px-4 pt-4 pb-2"
+        className="flex items-center justify-between px-4 pb-2"
+        style={{ paddingTop: "max(env(safe-area-inset-top), 1rem)" }}
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-paper/70 text-xs font-mono">
@@ -44,6 +57,8 @@ export function PhotoLightbox({ photos, startIndex, onClose, onRetake }: Props) 
       <div
         className="flex-1 min-h-0 flex items-center justify-center px-2"
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
       >
         <img
           src={photo.dataUrl}
@@ -53,7 +68,11 @@ export function PhotoLightbox({ photos, startIndex, onClose, onRetake }: Props) 
       </div>
 
       {/* caption + actions */}
-      <div className="px-5 pb-8 pt-3" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="px-5 pt-3"
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 2rem)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {photo.caption && (
           <p className="text-paper text-center text-sm mb-1">{photo.caption}</p>
         )}

@@ -50,3 +50,8 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.src = src;
   });
 }
+
+/** Small grid thumbnail (~320px, aggressive quality) — a few tens of KB. */
+export function makeThumbnail(dataUrl: string): Promise<string> {
+  return compressDataUrl(dataUrl, 320, 0.6);
+}

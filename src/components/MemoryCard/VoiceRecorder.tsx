@@ -6,7 +6,19 @@ import { nanoid } from "nanoid";
 import { db } from "../../lib/db";
 import { pushVoiceNote } from "../../lib/sync";
 import { getCurrentUid } from "../../lib/firebase";
+import { useMemberName } from "../../lib/useJourneyHelpers";
 import type { VoiceNote } from "../../types";
+
+// iPhones can only record audio/mp4; Chrome/Android record webm. Prefer
+// mp4 when the device supports recording it, since mp4 PLAYS everywhere
+// while webm does not play on iPhones. Never hardcode the label.
+function pickMimeType(): string | undefined {
+  const candidates = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"];
+  for (const c of candidates) {
+    if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported?.(c)) return c;
+  }
+  return undefined;
+}
 
 const MAX_SECONDS = 20;
 
@@ -25,6 +37,7 @@ export function VoiceRecorder({ journeyId, milestoneInstanceId }: Props) {
   const uid = getCurrentUid();
   const mine = notes?.find((n) => n.createdBy === uid);
   const others = (notes ?? []).filter((n) => n.createdBy !== uid);
+  const nameFor = useMemberName(journeyId);
 
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -62,18 +75,26 @@ export function VoiceRecorder({ journeyId, milestoneInstanceId }: Props) {
       // the recording has to fit directly inside a Firestore document.
       // ~24 kbps keeps a full 20s note comfortably under the 1 MiB limit
       // (speech stays intelligible at this rate — it's not music).
-      const recorder = new MediaRecorder(stream, { audioBitsPerSecond: 24_000 });
+      const mimeType = pickMimeType();
+      const recorder = new MediaRecorder(stream, {
+        audioBitsPerSecond: 24_000,
+        ...(mimeType ? { mimeType } : {}),
+      });
       chunksRef.current = [];
       recorder.ondataavailable = (e) => chunksRef.current.push(e.data);
       recorder.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop());
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        // Use the recorder's REAL container type — hardcoding audio/webm
+        // mislabeled iPhone recordings (which are mp4) and broke playback.
+        const actualType = recorder.mimeType || mimeType || "audio/webm";
+        const blob = new Blob(chunksRef.current, { type: actualType });
         const dataUrl = await blobToDataUrl(blob);
         const record: VoiceNote = {
           id: nanoid(),
           journeyId,
           milestoneInstanceId,
           audioDataUrl: dataUrl,
+          mimeType: actualType,
           durationSeconds: elapsedRef.current,
           timestamp: new Date().toISOString(),
           createdBy: uid,
@@ -112,7 +133,15 @@ export function VoiceRecorder({ journeyId, milestoneInstanceId }: Props) {
   return (
     <div className="space-y-2">
       {others.map((note) => (
-        <VoiceNoteRow key={note.id} note={note} label="From the other phone" />
+        <VoiceNoteRow
+          key={note.id}
+          note={note}
+          label={
+            nameFor(note.createdBy)
+              ? `${nameFor(note.createdBy)} · ${note.durationSeconds}s`
+              : `From another device · ${note.durationSeconds}s`
+          }
+        />
       ))}
 
       {mine ? (

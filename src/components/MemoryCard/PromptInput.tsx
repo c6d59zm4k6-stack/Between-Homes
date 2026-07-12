@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { db } from "../../lib/db";
 import { pushPromptAnswer } from "../../lib/sync";
 import { getCurrentUid } from "../../lib/firebase";
+import { useMemberName } from "../../lib/useJourneyHelpers";
 
 const MAX_LEN = 200;
 const PUSH_DEBOUNCE_MS = 900;
@@ -28,6 +29,7 @@ export function PromptInput({ journeyId, milestoneInstanceId, prompt }: Props) {
   const uid = getCurrentUid();
   const mine = answers?.find((a) => a.createdBy === uid);
   const others = (answers ?? []).filter((a) => a.createdBy !== uid && a.answer.trim());
+  const nameFor = useMemberName(journeyId);
 
   const [value, setValue] = useState("");
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -104,7 +106,7 @@ export function PromptInput({ journeyId, milestoneInstanceId, prompt }: Props) {
             >
               <p className="font-hand text-lg leading-snug text-ink">"{a.answer}"</p>
               <p className="text-[10px] font-mono tracking-[0.15em] uppercase text-stamp mt-0.5">
-                From the other phone
+                {nameFor(a.createdBy) ?? "From another device"}
               </p>
             </blockquote>
           ))}

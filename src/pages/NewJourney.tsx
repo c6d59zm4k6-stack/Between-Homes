@@ -7,8 +7,8 @@ export function NewJourney() {
   return (
     <div className="min-h-full px-6 pt-10 pb-10 max-w-md mx-auto">
       <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1 text-ink-soft text-sm mb-6"
+        onClick={() => navigate("/")}
+        className="flex items-center gap-1 text-ink-soft text-sm mb-6 py-2 -my-2"
       >
         <ChevronLeft className="w-4 h-4" /> Back
       </button>

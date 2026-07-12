@@ -15,6 +15,13 @@
   html, body, #root {
     height: 100%;
   }
+  /* The app runs full-bleed under the iOS status bar (black-translucent).
+     Without these insets, top-of-screen buttons render beneath the clock/
+     notch where iOS swallows taps — they look fine but can't be pressed. */
+  #root {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
   body {
     @apply bg-paper text-ink font-body antialiased;
   }

@@ -11,7 +11,7 @@ export default {
         "ink-soft": "#5A6478",
         marigold: {
           DEFAULT: "#E8A33D",
-          dark: "#C07F1D",
+          dark: "#8F5D0C", // darkened from #C07F1D for WCAG AA contrast
           light: "#F5D9A8",
         },
         teal: {
@@ -19,7 +19,7 @@ export default {
           dark: "#1F433F",
           light: "#4C8983",
         },
-        stamp: "#94886F",
+        stamp: "#6E6350", // darkened from #94886F for WCAG AA small-text contrast on paper
         // per-phase scene identities — tint for fills, deep for icons/text
         peach: { tint: "#F8E3D4", deep: "#C97853" },
         sky: { tint: "#DCEAF4", deep: "#5E93B8" },

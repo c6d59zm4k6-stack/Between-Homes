@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import { db } from "../../lib/db";
 import { pushPhoto } from "../../lib/sync";
 import { getCurrentUid } from "../../lib/firebase";
+import { makeThumbnail } from "../../lib/imageCompress";
 import { PhotoLightbox } from "../Shared/PhotoLightbox";
 import type { Photo } from "../../types";
 
@@ -47,6 +48,7 @@ export function PhotoSuggestions({ journeyId, milestoneInstanceId, suggestions }
     });
 
     const uid = getCurrentUid();
+    const thumbUrl = await makeThumbnail(dataUrl).catch(() => undefined);
     // Retaking replaces YOUR earlier photo for this suggestion (same id, so
     // the sync overwrites cleanly) — but never touches the other parent's
     // photo of the same scene.
@@ -57,6 +59,7 @@ export function PhotoSuggestions({ journeyId, milestoneInstanceId, suggestions }
       journeyId,
       milestoneInstanceId,
       dataUrl,
+      thumbUrl,
       caption: activeSuggestion,
       timestamp: new Date().toISOString(),
       createdBy: uid,
@@ -91,7 +94,7 @@ export function PhotoSuggestions({ journeyId, milestoneInstanceId, suggestions }
               className="relative aspect-[4/3] rounded-xl overflow-hidden border border-ink/10 bg-paper-dim text-left"
             >
               {photo ? (
-                <img src={photo.dataUrl} alt={s} className="w-full h-full object-cover" />
+                <img src={photo.thumbUrl ?? photo.dataUrl} alt={s} className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full gap-1.5 px-2">
                   <Camera className="w-5 h-5 text-stamp" />

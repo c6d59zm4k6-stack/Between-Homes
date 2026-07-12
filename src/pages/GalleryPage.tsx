@@ -5,13 +5,15 @@ import { ChevronLeft, Images } from "lucide-react";
 import { db } from "../lib/db";
 import { getMilestoneDefinition } from "../lib/milestones";
 import { PhotoLightbox } from "../components/Shared/PhotoLightbox";
+import { PageLoading, PageNotFound } from "../components/Shared/PageStates";
+import { useJourney } from "../lib/useJourneyHelpers";
 
 export function GalleryPage() {
   const { journeyId } = useParams<{ journeyId: string }>();
   const navigate = useNavigate();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const journey = useLiveQuery(() => db.journeys.get(journeyId!), [journeyId]);
+  const journey = useJourney(journeyId);
   const photos = useLiveQuery(
     () => db.photos.where("journeyId").equals(journeyId!).toArray(),
     [journeyId]
@@ -21,7 +23,8 @@ export function GalleryPage() {
     [journeyId]
   );
 
-  if (!journey) return null;
+  if (journey === undefined) return <PageLoading />;
+  if (journey === null) return <PageNotFound />;
 
   const sorted = (photos ?? [])
     .slice()
@@ -47,10 +50,10 @@ export function GalleryPage() {
   return (
     <div className="min-h-full px-5 pt-8 pb-16 max-w-md mx-auto">
       <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1 text-ink-soft text-sm mb-5"
+        onClick={() => navigate(`/journey/${journeyId}`)}
+        className="flex items-center gap-1 text-ink-soft text-sm mb-5 py-2 -my-2"
       >
-        <ChevronLeft className="w-4 h-4" /> Back
+        <ChevronLeft className="w-4 h-4" /> Timeline
       </button>
 
       <p className="font-hand text-lg text-marigold-dark">Every picture we took</p>
@@ -81,7 +84,7 @@ export function GalleryPage() {
                 className="aspect-square rounded-lg overflow-hidden border border-ink/5 bg-paper-dim"
               >
                 <img
-                  src={photo.dataUrl}
+                  src={photo.thumbUrl ?? photo.dataUrl}
                   alt={photo.caption ?? "Journey photo"}
                   className="w-full h-full object-cover"
                   loading="lazy"

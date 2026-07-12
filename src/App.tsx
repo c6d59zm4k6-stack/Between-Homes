@@ -10,6 +10,7 @@ import { MilestonePage } from "./pages/MilestonePage";
 import { BookPage } from "./pages/BookPage";
 import { GalleryPage } from "./pages/GalleryPage";
 import { JoinJourney } from "./pages/JoinJourney";
+import { UpdateToast } from "./components/Shared/UpdateToast";
 
 export default function App() {
   // Fixes a real race: without this gate, a freshly-opened browser (e.g. a
@@ -66,6 +67,7 @@ export default function App() {
   return (
     <HashRouter>
       <div className="min-h-screen bg-paper">
+        <UpdateToast />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/new" element={<NewJourney />} />
