@@ -51,9 +51,14 @@ forget, then turns them into a written chapter later.
 - **React + TypeScript + Vite + Tailwind + Framer Motion**, mobile-first.
 - **Dexie (IndexedDB)** is the source of truth on-device; the app works
   fully offline on a single device even with no Firebase configured at all.
-- **Firebase** (Anonymous Auth + Firestore + Storage) is the thin sync
-  layer that makes the join-code, two-parent flow possible. It's optional -
-  leave `.env` blank and the app runs local-only.
+- **Firebase** (Anonymous Auth + Firestore) is the thin sync layer that
+  makes the join-code, two-parent flow possible. It's optional - leave
+  `.env` blank and the app runs local-only. Photos and voice notes sync
+  directly through Firestore (compressed to fit its 1 MiB document limit)
+  rather than through Firebase Storage, so this all stays on Firebase's
+  free Spark plan - no billing account needed. The trade-off: the parent
+  who *didn't* take a photo sees a slightly compressed copy of it, not the
+  original full-resolution file.
 - **A single Vercel serverless function** (`api/generate-chapter.ts`) holds
   the Anthropic API key server-side and is the only thing that talks to the
   Claude API, so the key is never exposed to the browser.
@@ -87,14 +92,12 @@ devices until you add Firebase keys below.
 2. Add a Web App (</> icon) and copy the config values into `.env`
    (see `.env.example`).
 3. Enable **Anonymous** sign-in: Authentication -> Sign-in method.
-4. Enable **Firestore** and **Storage** (production mode is fine).
-5. Deploy the provided rules:
-   ```bash
-   npm install -g firebase-tools
-   firebase login
-   firebase init firestore storage   # point at this project, keep the existing rules files
-   firebase deploy --only firestore:rules,storage:rules
-   ```
+4. Enable **Firestore** (Build -> Firestore Database -> Create database,
+   production mode). Firebase Storage is intentionally not used here since
+   it now requires a paid Blaze plan - see the Photo Intelligence note above.
+5. Publish the security rules: open Firestore -> Rules tab in the Firebase
+   console, paste in the contents of `firestore.rules`, and click Publish.
+   No terminal needed.
 
 ## Deploying (Vercel)
 
