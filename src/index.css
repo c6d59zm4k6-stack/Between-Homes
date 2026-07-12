@@ -1,0 +1,41 @@
+@import "@fontsource/fraunces/400.css";
+@import "@fontsource/fraunces/500-italic.css";
+@import "@fontsource/fraunces/600.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-paper text-ink font-body antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid theme(colors.teal.DEFAULT);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .perforation-edge {
+    background-image: radial-gradient(circle, rgba(27,35,51,0.18) 1.5px, transparent 1.5px);
+    background-size: 10px 10px;
+    background-repeat: repeat-x;
+    background-position: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
