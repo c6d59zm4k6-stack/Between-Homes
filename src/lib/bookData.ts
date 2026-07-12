@@ -38,17 +38,20 @@ export async function assembleChapterInput(
   for (const inst of instances) {
     if (inst.status === "skipped") continue;
     const def = getMilestoneDefinition(journeyType, inst.key);
-    const [photos, promptAnswer, voiceNote] = await Promise.all([
+    const [photos, promptAnswers, voiceNotes] = await Promise.all([
       db.photos.where("milestoneInstanceId").equals(inst.id).toArray(),
-      db.promptAnswers.where("milestoneInstanceId").equals(inst.id).first(),
-      db.voiceNotes.where("milestoneInstanceId").equals(inst.id).first(),
+      db.promptAnswers.where("milestoneInstanceId").equals(inst.id).toArray(),
+      db.voiceNotes.where("milestoneInstanceId").equals(inst.id).toArray(),
     ]);
+    const answered = promptAnswers.filter((a) => a.answer.trim());
+    const transcripts = voiceNotes.map((v) => v.transcript).filter(Boolean);
     milestones.push({
       label: def?.label ?? inst.key,
       photos: photos.map((p) => ({ caption: p.caption, timestamp: p.timestamp })),
-      promptQuestion: promptAnswer?.prompt,
-      promptAnswer: promptAnswer?.answer,
-      voiceTranscript: voiceNote?.transcript,
+      promptQuestion: answered[0]?.prompt,
+      // Both parents may have answered — give the writer every voice.
+      promptAnswer: answered.map((a) => a.answer).join(" / ") || undefined,
+      voiceTranscript: transcripts.join(" / ") || undefined,
     });
   }
   return {

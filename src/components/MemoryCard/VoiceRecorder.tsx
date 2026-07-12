@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import { db } from "../../lib/db";
 import { pushVoiceNote } from "../../lib/sync";
 import { getCurrentUid } from "../../lib/firebase";
+import type { VoiceNote } from "../../types";
 
 const MAX_SECONDS = 20;
 
@@ -15,21 +16,39 @@ interface Props {
 }
 
 export function VoiceRecorder({ journeyId, milestoneInstanceId }: Props) {
-  const existing = useLiveQuery(
-    () => db.voiceNotes.where("milestoneInstanceId").equals(milestoneInstanceId).first(),
+  // Everyone's notes for this milestone — each family member records their
+  // own; this device can only delete its own.
+  const notes = useLiveQuery(
+    () => db.voiceNotes.where("milestoneInstanceId").equals(milestoneInstanceId).toArray(),
     [milestoneInstanceId]
   );
+  const uid = getCurrentUid();
+  const mine = notes?.find((n) => n.createdBy === uid);
+  const others = (notes ?? []).filter((n) => n.createdBy !== uid);
 
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [playing, setPlaying] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
   const elapsedRef = useRef(0); // onstop fires from a stale render; read duration from a ref
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => () => stopTimer(), []);
+  useEffect(
+    () => () => {
+      stopTimer();
+      // If the person navigates away mid-recording, the mic stream was
+      // never being released — iOS then keeps showing an active-microphone
+      // indicator indefinitely, which can sit on top of and block other UI.
+      // Detach handlers first so leaving doesn't save a half-finished note.
+      const recorder = mediaRecorderRef.current;
+      if (recorder && recorder.state !== "inactive") {
+        recorder.onstop = null;
+        recorder.ondataavailable = null;
+        recorder.stream.getTracks().forEach((t) => t.stop());
+      }
+    },
+    []
+  );
 
   function stopTimer() {
     if (timerRef.current) window.clearInterval(timerRef.current);
@@ -50,14 +69,14 @@ export function VoiceRecorder({ journeyId, milestoneInstanceId }: Props) {
         stream.getTracks().forEach((t) => t.stop());
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         const dataUrl = await blobToDataUrl(blob);
-        const record = {
+        const record: VoiceNote = {
           id: nanoid(),
           journeyId,
           milestoneInstanceId,
           audioDataUrl: dataUrl,
           durationSeconds: elapsedRef.current,
           timestamp: new Date().toISOString(),
-          createdBy: getCurrentUid(),
+          createdBy: uid,
         };
         await db.voiceNotes.add(record);
         void pushVoiceNote(record);
@@ -86,74 +105,97 @@ export function VoiceRecorder({ journeyId, milestoneInstanceId }: Props) {
     setRecording(false);
   }
 
-  async function deleteNote() {
-    if (existing) await db.voiceNotes.delete(existing.id);
-  }
-
-  function togglePlay() {
-    if (!audioRef.current) return;
-    if (playing) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-  }
-
-  if (existing) {
-    return (
-      <div className="flex items-center gap-3 rounded-xl border border-ink/15 bg-paper px-3.5 py-3">
-        <audio
-          ref={audioRef}
-          src={existing.audioDataUrl}
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
-          onEnded={() => setPlaying(false)}
-        />
-        <button
-          onClick={togglePlay}
-          className="w-9 h-9 rounded-full bg-teal text-paper flex items-center justify-center shrink-0"
-        >
-          {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-        </button>
-        <span className="text-sm text-ink-soft flex-1">
-          Voice note · {existing.durationSeconds}s
-        </span>
-        <button onClick={deleteNote} className="text-stamp">
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
-    );
+  async function deleteMine() {
+    if (mine) await db.voiceNotes.delete(mine.id);
   }
 
   return (
-    <button
-      onClick={recording ? stopRecording : startRecording}
-      className="flex items-center gap-3 rounded-xl border border-ink/15 bg-paper px-3.5 py-3 w-full"
-    >
-      <div className="relative w-9 h-9 shrink-0 flex items-center justify-center">
-        {recording && (
-          <motion.span
-            className="absolute inset-0 rounded-full bg-clay/30"
-            animate={{ scale: [1, 1.5], opacity: [0.6, 0] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          />
-        )}
-        <div
-          className={`w-9 h-9 rounded-full flex items-center justify-center ${
-            recording ? "bg-clay" : "bg-ink"
-          }`}
+    <div className="space-y-2">
+      {others.map((note) => (
+        <VoiceNoteRow key={note.id} note={note} label="From the other phone" />
+      ))}
+
+      {mine ? (
+        <VoiceNoteRow note={mine} label={`Your note · ${mine.durationSeconds}s`} onDelete={deleteMine} />
+      ) : (
+        <button
+          onClick={recording ? stopRecording : startRecording}
+          className="flex items-center gap-3 rounded-xl border border-ink/15 bg-paper px-3.5 py-3 w-full"
         >
-          {recording ? (
-            <Square className="w-3.5 h-3.5 text-paper" fill="currentColor" />
-          ) : (
-            <Mic className="w-4 h-4 text-paper" />
-          )}
-        </div>
-      </div>
-      <span className="text-sm text-ink-soft">
-        {recording ? `Recording… ${MAX_SECONDS - elapsed}s left` : "Add a 20-second voice note"}
-      </span>
-    </button>
+          <div className="relative w-9 h-9 shrink-0 flex items-center justify-center">
+            {recording && (
+              <motion.span
+                className="absolute inset-0 rounded-full bg-coral/30"
+                animate={{ scale: [1, 1.5], opacity: [0.6, 0] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+            )}
+            <div
+              className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                recording ? "bg-coral" : "bg-ink"
+              }`}
+            >
+              {recording ? (
+                <Square className="w-3.5 h-3.5 text-paper" fill="currentColor" />
+              ) : (
+                <Mic className="w-4 h-4 text-paper" />
+              )}
+            </div>
+          </div>
+          <span className="text-sm text-ink-soft">
+            {recording
+              ? `Recording… ${MAX_SECONDS - elapsed}s left`
+              : others.length > 0
+                ? "Add your own 20-second voice note"
+                : "Add a 20-second voice note"}
+          </span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+function VoiceNoteRow({
+  note,
+  label,
+  onDelete,
+}: {
+  note: VoiceNote;
+  label: string;
+  onDelete?: () => void;
+}) {
+  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  function togglePlay() {
+    if (!audioRef.current) return;
+    if (playing) audioRef.current.pause();
+    else audioRef.current.play();
+  }
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-ink/15 bg-paper px-3.5 py-3">
+      <audio
+        ref={audioRef}
+        src={note.audioDataUrl}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+      />
+      <button
+        onClick={togglePlay}
+        className="w-9 h-9 rounded-full bg-teal text-paper flex items-center justify-center shrink-0"
+        aria-label={playing ? "Pause" : "Play"}
+      >
+        {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+      </button>
+      <span className="text-sm text-ink-soft flex-1">{label}</span>
+      {onDelete && (
+        <button onClick={onDelete} className="text-stamp" aria-label="Delete note">
+          <Trash2 className="w-4 h-4" />
+        </button>
+      )}
+    </div>
   );
 }
 

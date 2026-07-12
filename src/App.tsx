@@ -8,6 +8,7 @@ import { NewJourney } from "./pages/NewJourney";
 import { JourneyDashboard } from "./pages/JourneyDashboard";
 import { MilestonePage } from "./pages/MilestonePage";
 import { BookPage } from "./pages/BookPage";
+import { GalleryPage } from "./pages/GalleryPage";
 import { JoinJourney } from "./pages/JoinJourney";
 
 export default function App() {
@@ -72,6 +73,7 @@ export default function App() {
           <Route path="/journey/:journeyId" element={<JourneyDashboard />} />
           <Route path="/journey/:journeyId/milestone/:milestoneId" element={<MilestonePage />} />
           <Route path="/journey/:journeyId/book" element={<BookPage />} />
+          <Route path="/journey/:journeyId/photos" element={<GalleryPage />} />
         </Routes>
       </div>
     </HashRouter>

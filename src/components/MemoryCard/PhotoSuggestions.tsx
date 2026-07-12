@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import { db } from "../../lib/db";
 import { pushPhoto } from "../../lib/sync";
 import { getCurrentUid } from "../../lib/firebase";
+import { PhotoLightbox } from "../Shared/PhotoLightbox";
 import type { Photo } from "../../types";
 
 interface Props {
@@ -19,10 +20,14 @@ export function PhotoSuggestions({ journeyId, milestoneInstanceId, suggestions }
     [milestoneInstanceId]
   );
   const [activeSuggestion, setActiveSuggestion] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const capturedFor = (suggestion: string) =>
-    photos?.some((p) => p.caption === suggestion);
+  const sorted = (photos ?? []).slice().sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+  function photoFor(suggestion: string) {
+    return sorted.find((p) => p.caption === suggestion);
+  }
 
   function openCameraFor(suggestion: string) {
     setActiveSuggestion(suggestion);
@@ -41,16 +46,22 @@ export function PhotoSuggestions({ journeyId, milestoneInstanceId, suggestions }
       reader.readAsDataURL(file);
     });
 
+    const uid = getCurrentUid();
+    // Retaking replaces YOUR earlier photo for this suggestion (same id, so
+    // the sync overwrites cleanly) — but never touches the other parent's
+    // photo of the same scene.
+    const existingMine = sorted.find((p) => p.caption === activeSuggestion && p.createdBy === uid);
+
     const photo: Photo = {
-      id: nanoid(),
+      id: existingMine?.id ?? nanoid(),
       journeyId,
       milestoneInstanceId,
       dataUrl,
       caption: activeSuggestion,
       timestamp: new Date().toISOString(),
-      createdBy: getCurrentUid(),
+      createdBy: uid,
     };
-    await db.photos.add(photo);
+    await db.photos.put(photo);
     void pushPhoto(photo);
     setActiveSuggestion(null);
   }
@@ -67,12 +78,16 @@ export function PhotoSuggestions({ journeyId, milestoneInstanceId, suggestions }
       />
       <div className="grid grid-cols-2 gap-2.5">
         {suggestions.map((s) => {
-          const done = capturedFor(s);
-          const photo = photos?.find((p) => p.caption === s);
+          const photo = photoFor(s);
           return (
             <button
               key={s}
-              onClick={() => openCameraFor(s)}
+              onClick={() => {
+                // Filled slot → open the viewer (retake lives inside it).
+                // Empty slot → straight to the camera.
+                if (photo) setLightboxIndex(sorted.indexOf(photo));
+                else openCameraFor(s);
+              }}
               className="relative aspect-[4/3] rounded-xl overflow-hidden border border-ink/10 bg-paper-dim text-left"
             >
               {photo ? (
@@ -85,8 +100,8 @@ export function PhotoSuggestions({ journeyId, milestoneInstanceId, suggestions }
                   </span>
                 </div>
               )}
-              {done && (
-                <div className="absolute top-1.5 right-1.5 bg-teal rounded-full p-1">
+              {photo && (
+                <div className="absolute top-1.5 right-1.5 bg-sage-deep rounded-full p-1">
                   <Check className="w-3 h-3 text-paper" strokeWidth={3} />
                 </div>
               )}
@@ -94,6 +109,18 @@ export function PhotoSuggestions({ journeyId, milestoneInstanceId, suggestions }
           );
         })}
       </div>
+
+      {lightboxIndex !== null && sorted[lightboxIndex] && (
+        <PhotoLightbox
+          photos={sorted}
+          startIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onRetake={(photo) => {
+            setLightboxIndex(null);
+            if (photo.caption) openCameraFor(photo.caption);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -115,8 +115,8 @@ export function MilestoneCard({ instance, definition, onOpen }: Props) {
               <p className="text-xs text-ink-soft mt-1.5">
                 {[
                   counts.photos > 0 && `${counts.photos} photo${counts.photos > 1 ? "s" : ""}`,
-                  counts.answers > 0 && "1 note",
-                  counts.notes > 0 && "1 voice memo",
+                  counts.answers > 0 && `${counts.answers} note${counts.answers > 1 ? "s" : ""}`,
+                  counts.notes > 0 && `${counts.notes} voice memo${counts.notes > 1 ? "s" : ""}`,
                 ]
                   .filter(Boolean)
                   .join(" · ") || "Captured"}

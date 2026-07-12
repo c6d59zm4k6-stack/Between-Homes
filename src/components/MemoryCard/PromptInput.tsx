@@ -15,36 +15,39 @@ interface Props {
 }
 
 export function PromptInput({ journeyId, milestoneInstanceId, prompt }: Props) {
-  const existing = useLiveQuery(
+  // Everyone's answers for this milestone — each family member writes
+  // their own; this device can only edit its own.
+  const answers = useLiveQuery(
     () =>
       db.promptAnswers
         .where("milestoneInstanceId")
         .equals(milestoneInstanceId)
-        .first(),
+        .toArray(),
     [milestoneInstanceId]
   );
+  const uid = getCurrentUid();
+  const mine = answers?.find((a) => a.createdBy === uid);
+  const others = (answers ?? []).filter((a) => a.createdBy !== uid && a.answer.trim());
+
   const [value, setValue] = useState("");
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  // Holds the record id from the moment we decide to create one — set
-  // synchronously, before any await, so rapid keystrokes can't race the
-  // live query into creating duplicate records.
+  // Set synchronously before any await when we create a record, so rapid
+  // keystrokes can't race the live query into creating duplicates.
   const recordIdRef = useRef<string | null>(null);
   const pushTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (existing && !recordIdRef.current) {
-      recordIdRef.current = existing.id;
-      setValue(existing.answer);
+    if (mine && !recordIdRef.current) {
+      recordIdRef.current = mine.id;
+      setValue(mine.answer);
     }
-  }, [existing?.id]);
+  }, [mine?.id]);
 
   useEffect(() => () => {
     if (pushTimerRef.current) window.clearTimeout(pushTimerRef.current);
   }, []);
 
   function schedulePush(id: string) {
-    // Dexie is written on every keystroke (cheap, local); Firestore push is
-    // debounced so we don't burn a write per character.
     if (pushTimerRef.current) window.clearTimeout(pushTimerRef.current);
     pushTimerRef.current = window.setTimeout(async () => {
       const record = await db.promptAnswers.get(id);
@@ -67,7 +70,7 @@ export function PromptInput({ journeyId, milestoneInstanceId, prompt }: Props) {
         prompt,
         answer: next,
         timestamp: new Date().toISOString(),
-        createdBy: getCurrentUid(),
+        createdBy: uid,
       });
       schedulePush(id);
     }
@@ -86,13 +89,27 @@ export function PromptInput({ journeyId, milestoneInstanceId, prompt }: Props) {
         className="w-full resize-none rounded-xl border border-ink/15 bg-paper px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/50 focus:border-teal outline-none"
       />
       <div className="flex justify-between mt-1 px-0.5">
-        <span className="text-[11px] text-stamp font-mono">
-          {savedAt ? "Saved" : ""}
-        </span>
+        <span className="text-[11px] text-stamp font-mono">{savedAt ? "Saved" : ""}</span>
         <span className="text-[11px] text-stamp font-mono">
           {value.length}/{MAX_LEN}
         </span>
       </div>
+
+      {others.length > 0 && (
+        <div className="mt-3 space-y-2">
+          {others.map((a) => (
+            <blockquote
+              key={a.id}
+              className="border-l-2 border-marigold/60 pl-3 py-0.5"
+            >
+              <p className="font-hand text-lg leading-snug text-ink">"{a.answer}"</p>
+              <p className="text-[10px] font-mono tracking-[0.15em] uppercase text-stamp mt-0.5">
+                From the other phone
+              </p>
+            </blockquote>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
